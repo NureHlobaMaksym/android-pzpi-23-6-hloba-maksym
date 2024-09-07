@@ -1,1 +1,3 @@
-# android-pzpi-23-6-hloba-maksym
+ПЗПІ-23-6
+
+Глоба Максим
