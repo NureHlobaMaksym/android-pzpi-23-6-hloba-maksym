@@ -62,10 +62,10 @@ LinearLayout і створюємо напис «Task 1»:
 
 Під час лабораторної роботи було закріплено знання з налаштування розмітки 
 додатку та з базових методів життєвого циклу активностей.
-Відеозвіт на YouTube. URL: https://youtu.be/2tFV4uR5wqo 
+Відеозвіт на YouTube. URL: https://www.youtube.com/watch?v=PO0--O0li3w
 
  
 Використані джерела
 
 1.	DL конспект лекції: Файли розмітки Layout: Файли розмітки Layout. URL: 
-https://youtu.be/PO0--O0li3w (дата звернення: 28.10.2024)
+https://dl.nure.ua/mod/page/view.php?id=583066 (дата звернення: 28.10.2024)
