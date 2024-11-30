@@ -1,0 +1,70 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/main"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context=".MainActivity">
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="10dp"
+        android:text="MainActivity"
+        android:textSize="20sp"
+        app:layout_constraintEnd_toEndOf="@+id/handlerMessageTextView"
+        app:layout_constraintStart_toStartOf="@+id/handlerMessageTextView" />
+
+    <TextView
+        android:id="@+id/handlerMessageTextView"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="50dp"
+        android:text="Message will appear here"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <Button
+        android:id="@+id/startHandlerButton"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="10dp"
+        android:text="Start Handler"
+        app:layout_constraintEnd_toEndOf="@+id/handlerMessageTextView"
+        app:layout_constraintStart_toStartOf="@+id/handlerMessageTextView"
+        app:layout_constraintTop_toBottomOf="@+id/handlerMessageTextView" />
+
+    <Button
+        android:id="@+id/backgroundThreadButton"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="10dp"
+        android:text="Move to backgroung thread activity"
+        app:layout_constraintEnd_toEndOf="@+id/startHandlerButton"
+        app:layout_constraintStart_toStartOf="@+id/startHandlerButton"
+        app:layout_constraintTop_toBottomOf="@+id/startHandlerButton" />
+
+    <Button
+        android:id="@+id/messageButton"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="10dp"
+        android:text="Move to message activity"
+        app:layout_constraintEnd_toEndOf="@+id/backgroundThreadButton"
+        app:layout_constraintStart_toStartOf="@+id/backgroundThreadButton"
+        app:layout_constraintTop_toBottomOf="@+id/backgroundThreadButton" />
+
+    <Button
+        android:id="@+id/handlerThreadButton"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="10dp"
+        android:text="Move to message activity"
+        app:layout_constraintEnd_toEndOf="@+id/messageButton"
+        app:layout_constraintStart_toStartOf="@+id/messageButton"
+        app:layout_constraintTop_toBottomOf="@+id/messageButton" />
+
+
+</androidx.constraintlayout.widget.ConstraintLayout>
