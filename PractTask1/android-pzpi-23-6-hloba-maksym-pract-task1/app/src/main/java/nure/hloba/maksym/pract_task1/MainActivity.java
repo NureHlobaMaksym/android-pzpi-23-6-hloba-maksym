@@ -17,13 +17,5 @@ public class MainActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-        Button textChangeButton = findViewById(R.id.textChangeButton);
-        TextView textView = findViewById(R.id.textView);
-        textChangeButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                textView.setText("Текст було змінено!");
-            }
-        });
     }
 }
