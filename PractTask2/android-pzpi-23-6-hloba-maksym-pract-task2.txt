@@ -1,0 +1,396 @@
+﻿МІНІСТЕРСТВО ОСВІТИ І НАУКИ УКРАЇНИ
+ХАРКІВСЬКИЙ НАЦІОНАЛЬНИЙ УНІВЕРСИТЕТ РАДІОЕЛЕКТРОНІКИ
+
+
+КАФЕДРА ПРОГРАМНОЇ ІНЖЕНЕРІЇ
+
+
+
+
+Звіт
+з практичної роботи № 2 з дисципліни
+Програмування під Android
+   
+
+
+
+
+
+Виконав:                                                             Перевірив:
+ст. гр. ПЗПІ-23-6                                       ст. викладач кафедри ПІ
+Глоба Максим Валерійович                                 Сокорчук Ігор Петрович
+
+
+
+
+
+
+
+
+
+Харків 2024
+ЗАВДАННЯ
+
+1.	Розмітка екрана
+1.1.	Підготовка робочого середовища
+1.2.	Практика з Linear/Constraint-Layout
+1.3.	Практика з атрибутами елементів
+1.4.	Обробка подій
+2.	Файли розмітки Layout
+2.1.	Створення різних Layout
+2.2.	Практика роботи з атрибутами
+3.	Життєвий цикл та методи Activity
+3.1.	Ознайомлення з життєвим циклом Activity
+3.2.	Дослідження методів життєвого циклу
+3.3.	Вивчення поведінки Activity при зміні орієнтації екрана
+3.4.	Практичне завдання з ручного збереження стану
+3.5.	Дослідження переходу між Activity
+3.6.	Обробка завершення Activity 
+ХІД РОБОТИ
+
+1.	Розмітка екрана
+   Відкриваємо Android Studio та створюємо новий проєкт, вибравши шаблон 
+Empty Views Activity. Відкриваємо файл res/layout/activity_main.xml. [додаток 
+А]
+   Практика з LinearLayout: cтворюємо розмітку, що містить кілька кнопок, 
+розташованих одна під одною. Використовуємо властивості orientation для 
+вертикальної орієнтації. Задаємо для кожної кнопки властивості layout_width та 
+layout_height, поекспериментуймо з різними значеннями, як wrap_content та 
+match_parent та властивістю weight.
+   Практика з ConstraintLayout: розміщуємо елементи на екрані, 
+використовуючи обмеження для позиціонування (constraints), щоб задати їх 
+взаємне розташування. Я розташовував інші розмітки усередині цієї розмітки.
+   Практика з RelativeLayout: розміщуємо кілька елементів відносно один 
+одного, використовуючи атрибути, такі як layout_below, layout_toRightOf.
+   Практика з FrameLayout: додаємо кілька текстових полів, щоб побачити, як 
+вони накладаються один на одного.
+   Практика з GridLayout: розмістимо 2 текстових поля та 2 кнопки у вигляді 
+таблиці, задаючи кількість стовпців і рядків.
+   Використовуємо такі атрибути, як padding, margin, gravity та layout_gravity 
+для налаштування відступів та вирівнювання елементів. Налаштовуємо текстові 
+поля.
+2.	Обробка подій.
+   Додаємо до кнопок обробники подій натискання у файлі MainActivity.java.
+
+1 public void onButtonClick(View view) {
+2     TextView androidColorTextView = 
+findViewById(R.id.androidColorTextView);
+3     ImageView imageView = findViewById(R.id.imageView);
+4     if (isColorChanged) {
+5         androidColorTextView.setText("Android color green!");
+6         
+imageView.setImageTintList(ColorStateList.valueOf(Color.GREEN));
+7     } else {
+8         androidColorTextView.setText("Android color red!");
+9         
+imageView.setImageTintList(ColorStateList.valueOf(Color.RED));
+10     }
+11     isColorChanged = !isColorChanged;
+12 }
+13 
+14 public void showMessage(View view) {
+15     Toast.makeText(this, "Message is showing", 
+Toast.LENGTH_SHORT).show();
+16 }
+
+   У файлі activity_main.xml додаємо атрибут android:onClick="onButtonClick" 
+до кнопки, а в класі MainActivity створюємо відповідний метод onButtonClick. 
+Аналогічно для іншої кнопки додаємо атрибут android:onClick="showMessage", 
+а в класі MainActivity створюємо відповідний метод showMessage.
+
+3.	Життєвий цикл та методи Activity
+   Додаємо до кожного методу життєвого циклу (onCreate, onStart, onResume 
+тощо) функцію виведення повідомлень у лог (Log.d) для відстеження 
+послідовності викликів. Оскільки всі вони майже однакові приведу один як 
+приклад:
+   
+1 Log.d("MainActivity", "onStart");
+   
+   Змінюємо орієнтацію пристрою (з портретної на ландшафтну) та 
+спостерігаємо за викликами методів життєвого циклу у логах.
+   Досліджуємо, як зміна орієнтації перезапускає Activity (викликаються 
+методи onPause(), onStop(), onDestroy(), а потім onCreate(), onStart(), 
+onResume()).
+   Додаємо в Activity поле для введення тексту (наприклад, EditText). При зміні 
+орієнтації екрана текст у полі буде очищено, оскільки Activity 
+перезавантажується. Щоб такого не було додаємо методи onSaveInstanceState та 
+onRestoreInstanceState.
+   
+1 @Override
+2 protected void onSaveInstanceState(@NonNull Bundle outState) {
+3     super.onSaveInstanceState(outState);
+4     outState.putString("text", editText.getText().toString());
+5 }
+6 
+7 @Override
+8 protected void onRestoreInstanceState(@NonNull Bundle 
+savedInstanceState) {
+9     super.onRestoreInstanceState(savedInstanceState);
+10     editText.setText(savedInstanceState.getString("text"));
+11 }
+
+   Створюємо друге Activity у нашому застосунку. Додаємо кнопку для 
+переходу до другого Activity. Відстежуємо виклики методів життєвого циклу 
+при переході між Activity. Додаємо кнопку для завершення Activity (виклик 
+методу finish()).
+   
+1 public void finish(View view) {
+2     finish();
+3 }
+
+   Було створено клікер, що зберігає кількість кліків за допомогою обробника 
+натискання на кнопку.
+
+1 Button tapCounterButton = findViewById(R.id.tapCounterButton);
+2 tapCounterButton.setOnClickListener(new View.OnClickListener() 
+{
+3     @Override
+4     public void onClick(View view) {
+5         count++;
+6         counterTextView.setText(Integer.toString(count));
+7     }
+8 });
+
+   Зберігається за допомогою методу onSaveInstanceState:
+   
+1 @Override
+2 protected void onSaveInstanceState(@NonNull Bundle outState) {
+3     super.onSaveInstanceState(outState);
+4     outState.putInt("count", count);
+5 }
+
+Відновлюється за допомогою методу onRestoreInstanceState:
+
+1 @Override
+2 protected void onRestoreInstanceState(@NonNull Bundle 
+savedInstanceState) {
+3     super.onRestoreInstanceState(savedInstanceState);
+4     count = savedInstanceState.getInt("count");
+5     counterTextView.setText(Integer.toString(count));
+6 }
+
+   До застосунку додано таймер, який автоматично призупиняється при 
+виклику методу onPause() і поновлюється після onResume(). Він створений за 
+допомогою функції runTimer.
+   
+   1 private void runTimer() {
+   2     timerTextView = findViewById(R.id.timerTextView);
+   3     final Handler handler = new Handler();
+   4     handler.post(new Runnable() {
+   5         @Override
+   6         public void run() {
+   7             String time = String.format("%02d:%02d:%02d", 
+seconds / 3600, (seconds % 3600) / 60, seconds % 60);
+   8             timerTextView.setText(time);
+   9             if (isRunning) {
+   10                 seconds++;
+   11             } else {
+   12                 return;
+   13             }
+   14             handler.postDelayed(this, 1000);
+   15         }
+   16     });
+   17 }
+   
+   Також для призупинення таймеру при виклику методу onPause у 
+перевизначеному методі onPause зміна isRunning приймає значення false.
+   
+   1 @Override
+   2 protected void onPause() {
+   3     super.onPause();
+   4     isRunning = false;
+   5 }
+   
+   Протилежно до onPause для поновлення таймеру при виклику onResume у 
+перевизначеному методі onResume зміна isRunning приймає значення true.
+   
+   1 @Override
+   2 protected void onResume() {
+   3     super.onResume();
+   4     isRunning = true;
+   5 }
+   
+   При початковому запуску програми зміна isRunning має значення true.
+
+ВИСНОВКИ
+   Під час практичної роботи було досліджено: створення та налаштування 
+різних розміток, використовуючи XML-файли. Виявлено, як компоненти та 
+атрибути взаємодіють між собою. Ознайомилися із життєвим циклом 
+компонентів Activity у застосунках Android. Навчилися керувати станами 
+Activity через використання ключових методів життєвого циклу.
+Відеозвіт на YouTube. URL: https://www.youtube.com/watch?v=oeee9P9aapg
+
+ 
+ВИКОРИСТАНІ ДЖЕРЕЛА
+
+1.	Методичні вказівки до практичних занять: Розмітка екрана в Android. 
+URL: https://dl.nure.ua/mod/page/view.php?id=599542 (дата звернення: 
+29.11.2024)
+2.	Методичні вказівки до практичних занять: Файли розмітки Layout. URL: 
+https://dl.nure.ua/mod/page/view.php?id=599543 (дата звернення: 
+29.11.2024)
+3.	Методичні вказівки до практичного заняття: Життєвий цикл та методи 
+Activity. URL: https://dl.nure.ua/mod/page/view.php?id=599544 (дата 
+звернення: 29.11.2024)
+ 
+ДОДАТОК А
+
+  Файл розмітки:
+  
+1 <?xml version="1.0" encoding="utf-8"?>
+2 <androidx.constraintlayout.widget.ConstraintLayout 
+xmlns:android="http://schemas.android.com/apk/res/android"
+3     xmlns:app="http://schemas.android.com/apk/res-auto"
+4     xmlns:tools="http://schemas.android.com/tools"
+5     android:id="@+id/main"
+6     android:layout_width="match_parent"
+7     android:layout_height="match_parent"
+8     tools:context=".MainActivity">
+9
+10     <TextView
+11         android:id="@+id/androidColorTextView"
+12         android:layout_width="wrap_content"
+13         android:layout_height="wrap_content"
+14         android:text="Android color green!"
+15         android:textSize="30sp"
+16         app:layout_constraintEnd_toEndOf="parent"
+17         app:layout_constraintStart_toStartOf="parent"
+18         
+app:layout_constraintTop_toBottomOf="@+id/imageView" />
+19
+20     <Button
+21         android:id="@+id/changeColorButton"
+22         android:layout_width="wrap_content"
+23         android:layout_height="wrap_content"
+24         android:layout_marginTop="30dp"
+25         android:onClick="onButtonClick"
+26         android:text="Change color"
+27         
+app:layout_constraintEnd_toEndOf="@+id/androidColorTextView"
+28         
+app:layout_constraintStart_toStartOf="@+id/androidColorTextVie
+w"
+29         
+app:layout_constraintTop_toBottomOf="@+id/androidColorTextView
+" />
+30
+31     <Button
+32         android:id="@+id/showMessageButton"
+33         android:layout_width="wrap_content"
+34         android:layout_height="wrap_content"
+35         android:onClick="showMessage"
+36         android:text="Show message"
+37         
+app:layout_constraintEnd_toEndOf="@+id/changeColorButton"
+38         
+app:layout_constraintStart_toStartOf="@+id/changeColorButton"
+39         
+app:layout_constraintTop_toBottomOf="@+id/changeColorButton" 
+/>
+40
+41     <ImageView
+42         android:id="@+id/imageView"
+43         android:layout_width="150dp"
+44         android:layout_height="150dp"
+45         android:src="@drawable/ic_launcher_foreground"
+46         app:layout_constraintEnd_toEndOf="parent"
+47         app:layout_constraintStart_toStartOf="parent"
+48         app:layout_constraintTop_toTopOf="parent"
+49         app:tint="#00FF00" />
+50
+51     <LinearLayout
+52         android:id="@+id/linearLayout"
+53         android:layout_width="match_parent"
+54         android:layout_height="wrap_content"
+55         android:gravity="end"
+56         android:orientation="vertical"
+57         android:paddingHorizontal="80dp"
+58         
+app:layout_constraintEnd_toEndOf="@+id/showMessageButton"
+59         
+app:layout_constraintStart_toStartOf="@+id/showMessageButton"
+60         
+app:layout_constraintTop_toBottomOf="@+id/showMessageButton">
+61
+62         <Button
+63             android:layout_width="wrap_content"
+64             android:layout_height="match_parent"
+65             android:text="Button1" />
+66
+67         <Button
+68             android:layout_width="match_parent"
+69             android:layout_height="wrap_content"
+70             android:text="Button2" />
+71
+72         <Button
+73             android:layout_width="wrap_content"
+74             android:layout_height="wrap_content"
+75             android:layout_gravity="start"
+76             android:text="Button3" />
+77
+78         <Button
+79             android:layout_width="match_parent"
+80             android:layout_height="match_parent"
+81             android:text="Button4" />
+82     </LinearLayout>
+83
+84     <GridLayout
+85         android:layout_width="wrap_content"
+86         android:layout_height="wrap_content"
+87         android:columnCount="2"
+88         android:rowCount="3"
+89         
+app:layout_constraintEnd_toEndOf="@+id/linearLayout"
+90         
+app:layout_constraintStart_toStartOf="@+id/linearLayout"
+91         
+app:layout_constraintTop_toBottomOf="@+id/linearLayout">
+92
+93         <TextView
+94             android:layout_width="wrap_content"
+95             android:layout_height="wrap_content"
+96             android:layout_gravity="center"
+97             android:text="Text1"
+98             android:textColor="#FF00FF"
+99             android:textSize="20sp"
+100            android:textStyle="bold" />
+101
+102         <TextView
+103            android:layout_width="wrap_content"
+104            android:layout_height="wrap_content"
+105            android:layout_gravity="center"
+106            android:text="Text2"
+107            android:textColor="#FF0F00"
+108            android:textSize="20sp"
+109            android:textStyle="bold" />
+110
+111         <ImageView
+112            android:layout_width="wrap_content"
+113            android:layout_height="wrap_content"
+114            android:paddingBottom="40dp"
+115            android:src="@drawable/ic_launcher_foreground"
+116            app:tint="#000000" />
+117
+118         <ImageView
+119            android:layout_width="wrap_content"
+120            android:layout_height="wrap_content"
+121            android:paddingBottom="40dp"
+122            android:src="@drawable/ic_launcher_foreground"
+123            app:tint="#000000" />
+124
+125         <Button
+126            android:layout_width="wrap_content"
+127            android:layout_height="wrap_content"
+128            android:layout_gravity="center"
+129            android:text="Button5" />
+130
+131         <Button
+132            android:layout_width="wrap_content"
+133            android:layout_height="wrap_content"
+134            android:layout_gravity="center"
+135            android:text="Button6" />
+136     </GridLayout>
+137
+138 </androidx.constraintlayout.widget.ConstraintLayout>
+1
+
