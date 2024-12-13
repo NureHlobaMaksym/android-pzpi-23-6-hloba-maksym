@@ -1,0 +1,902 @@
+﻿МІНІСТЕРСТВО ОСВІТИ І НАУКИ УКРАЇНИ
+ХАРКІВСЬКИЙ НАЦІОНАЛЬНИЙ УНІВЕРСИТЕТ РАДІОЕЛЕКТРОНІКИ
+
+
+КАФЕДРА ПРОГРАМНОЇ ІНЖЕНЕРІЇ
+
+
+
+
+Звіт
+з лабораторної роботи № 3 з дисципліни
+Програмування під Android
+   
+
+
+
+
+
+Виконав:                                                     Перевірив:
+ст. гр. ПЗПІ-23-6                                            ст. викладач кафедри ПІ
+Глоба Максим Валерійович                                     Сокорчук Ігор Петрович
+
+
+
+
+
+
+
+
+
+Харків 2024 
+ЗАВДАННЯ
+
+     Розробити калькулятор на 4 базові арифметичні операції з кнопками для 
+введення аргументів і дій. Калькулятор повинен мати адаптивний 
+користувацький інтерфейс у різних орієнтаціях екрану та на екранах різної 
+роздільної здатності.
+ 
+ХІД РОБОТИ
+
+     Cтворюємо новий проєкт та обиремо Empty Views Activity. Відкриваємо 
+файл activity_main.xml та починаємо з кнопок для введення чисел та операцій із 
+ними. Як основну розмітку було обрано LinearLayout і як допоміжну 
+(внутрішню) було обрано GridLayout. Саме в GridLayout будуть знаходитись 
+кнопки з цифрами та діями. А також окремо від GridLayout є поле з текстом, 
+яке буде змінюватись при натисканні на кнопки з діями або цифрами:
+
+1 <TextView
+2     android:id="@+id/result"
+3     android:layout_weight="0.3"
+4     android:layout_width="match_parent"
+5     android:layout_height="0dp"
+6     android:background="@color/darkerGrey"
+7     android:gravity="end|bottom"
+8     android:maxLines="1"
+9     android:paddingEnd="10dp"
+10     android:text="0"
+11     android:textColor="@color/white"
+12     android:textSize="75sp">
+13 </TextView>
+
+     Кнопки із цифрами та діями однотипні:
+
+1 <Button
+2     android:id="@+id/oneButton"
+3     android:layout_width="wrap_content"
+4     android:layout_height="wrap_content"
+5     android:layout_rowWeight="1"
+6     android:layout_columnWeight="1"
+7     android:layout_margin="0.5dp"
+8     android:backgroundTint="@color/grey"
+9     android:insetTop="0dp"
+10     android:insetBottom="0dp"
+11     android:text="1"
+12     android:textSize="25sp"
+13     app:cornerRadius="0dp">
+14 </Button>
+
+     Колір задається за допомогою атрибуту backgroundTint.
+     Для кольору були додані у файл ресурсів такі атрибути:
+     
+1 <resources>
+2     <color name="black">#FF000000</color>
+3     <color name="white">#FFFFFFFF</color>
+4     <color name="orange">#FFA500</color>
+5     <color name="darkGrey">#808080</color>
+6     <color name="darkerGrey">#3d3d3d</color>
+7     <color name="grey">#b2b2b2</color>
+8 </resources>
+
+     Повністю код файлу activity_main.xml можна побачити у ДОДАТКУ А.
+     Переходимо до функціональної частини. Першим кроком у файлі 
+MainActivity.java визначаємо кожну кнопку, на прикладі кнопки введення 
+одиниці:
+     
+      1 Button oneButton = findViewById(R.id.oneButton);
+
+     Потім з кнопок для чисел створюємо список numbersButtonsList:
+     
+      1 List<Button> numbersButtonsList = Arrays.asList(
+      2         zeroButton, oneButton, twoButton,
+      3         treeButton, fourButton, fiveButton,
+      4         sixButton, sevenButton, eightButton,
+      5         nineButton
+      6 );
+     
+      І для кожної кнопки та списку створюємо обробники подій. Також у 
+цьому файлі є дві функції, одна для оновлення текстового поля, а інше для 
+зменшення розміру цього текстового поля, щоб було більш читабельно коли у 
+калькуляторі мало чисел:
+     
+      1     private void updateResult() {
+      2         setResultText(calculator.getFormatedResult());
+      3     }
+      4 
+      5     private void setResultText(String text) {
+      6         result.setText(text);
+      7         if (text.length() < 10) {
+      8             result.setTextSize(TypedValue.COMPLEX_UNIT_SP, 
+75f);
+      9         } else if (text.length() < 12) {
+      10             result.setTextSize(TypedValue.COMPLEX_UNIT_SP, 
+60f);
+      11         } else if (text.length() < 16) {
+      12             result.setTextSize(TypedValue.COMPLEX_UNIT_SP, 
+45f);
+      13         } else {
+      14             result.setTextSize(TypedValue.COMPLEX_UNIT_SP, 
+35f);
+      15         }
+      16     }
+     
+     Повний код файлу MainActivity.java можна побачити у  ДОДАТКУ Б.
+     Надалі, щоб проводити дії над цифрами створюємо файл Calculator.java . 
+В ньому будуть різні функції, що певним чином змінюватимуть TextView. Ці 
+функції виконуватимуться при натискані на кнопки, а дії будуть проводитись 
+над наступними зміними, що ініціалізуються у файлі Calculator.java:
+     
+      1 private BigDecimal operand = BigDecimal.ZERO;
+      2 private boolean isDecimalPartActive;
+      3 private boolean isTrailingDotVisible;
+      4 private int trailingZeroesCount;
+      5 private Operation operation;
+      6 private static final int MAX_NUMBER_LENGTH = 19;
+      7 private boolean isOperandEntered;
+      8 private BigDecimal calculatedPart;
+     
+     Повний код файлу Calculator.java можна побачити у  ДОДАТКУ В.
+     Щоб легше було працювати з діями створюємо файл Operation.java в 
+якому будуть перелічені всі можливі операції над числами:
+     
+      1 public enum Operation {
+      2     PLUS, MINUS, MULTIPLY, DIVIDE
+      3 }
+
+	А також для оброблення помилки ділення на нуль був створений файл 
+CalculatorResultCallBack.java:
+
+1 public interface CalculatorResultCallback {
+2     void onDivisionByZeroError();
+3     void onSuccess();
+4 }
+
+
+ВИСНОВКИ
+
+   Під час лабораторної роботи було створено додаток калькулятор, закріплено 
+знання з обробки подій при використанні кнопок, обчислення записаних з 
+кнопок змінних та відображення результату на екрані.
+   Відеозвіт на YouTube. URL: https://www.youtube.com/watch?v=GaJ3B7DqmIU 
+
+ 
+ВИКОРИСТАНІ ДЖЕРЕЛА
+
+1.	GridLayout | Android Developers. URL: 
+https://developer.android.com/reference/android/widget/GridLayout (дата 
+звернення: 13.12.2024).
+
+ 
+ДОДАТОК А
+
+     activity_main.xml
+     
+1 <?xml version="1.0" encoding="utf-8"?>
+2 <LinearLayout 
+xmlns:android="http://schemas.android.com/apk/res/android"
+3     xmlns:app="http://schemas.android.com/apk/res-auto"
+4     xmlns:tools="http://schemas.android.com/tools"
+5     android:weightSum="1"
+6     android:layout_width="match_parent"
+7     android:layout_height="match_parent"
+8     android:background="@color/darkerGrey"
+9     android:orientation="vertical">
+10 
+11     <TextView
+12         android:id="@+id/result"
+13         android:layout_weight="0.3"
+14         android:layout_width="match_parent"
+15         android:layout_height="0dp"
+16         android:background="@color/darkerGrey"
+17         android:gravity="end|bottom"
+18         android:maxLines="1"
+19         android:paddingEnd="10dp"
+20         android:text="0"
+21         android:textColor="@color/white"
+22         android:textSize="75sp">
+23 
+24     </TextView>
+25 
+26     <GridLayout
+27         android:id="@+id/main"
+28         android:layout_weight="0.7"
+29         android:layout_width="match_parent"
+30         android:layout_height="0dp"
+31         android:columnCount="4"
+32         android:rowCount="5"
+33         
+tools:context="nure.hloba.maksym.lab_task3.MainActivity">
+34 
+35         <Button
+36             android:id="@+id/clearButton"
+37             android:layout_width="wrap_content"
+38             android:layout_height="wrap_content"
+39             android:layout_rowWeight="1"
+40             android:layout_columnWeight="1"
+41             android:layout_margin="0.5dp"
+42             android:backgroundTint="@color/darkGrey"
+43             android:insetTop="0dp"
+44             android:insetBottom="0dp"
+45             android:text="AC"
+46             android:textSize="25sp"
+47             app:cornerRadius="0dp">
+48 
+49         </Button>
+50 
+51         <Button
+52             android:id="@+id/changeSignButton"
+53             android:layout_width="wrap_content"
+54             android:layout_height="wrap_content"
+55             android:layout_rowWeight="1"
+56             android:layout_columnWeight="1"
+57             android:layout_margin="0.5dp"
+58             android:backgroundTint="@color/darkGrey"
+59             android:insetTop="0dp"
+60             android:insetBottom="0dp"
+61             android:text="+/-"
+62             android:textSize="25sp"
+63             app:cornerRadius="0dp">
+64 
+65         </Button>
+66 
+67         <Button
+68             android:id="@+id/backspaceButton"
+69             android:layout_width="wrap_content"
+70             android:layout_height="wrap_content"
+71             android:layout_rowWeight="1"
+72             android:layout_columnWeight="1"
+73             android:layout_margin="0.5dp"
+74             android:backgroundTint="@color/darkGrey"
+75             android:insetTop="0dp"
+76             android:insetBottom="0dp"
+77             android:text="⌫"
+78             android:textSize="25sp"
+79             app:cornerRadius="0dp">
+80 
+81         </Button>
+82 
+83         <Button
+84             android:id="@+id/divisionButton"
+85             android:layout_width="wrap_content"
+86             android:layout_height="wrap_content"
+87             android:layout_rowWeight="1"
+88             android:layout_columnWeight="1"
+89             android:layout_margin="0.5dp"
+90             android:backgroundTint="@color/orange"
+91             android:insetTop="0dp"
+92             android:insetBottom="0dp"
+93             android:text="÷"
+94             android:textSize="25sp"
+95             app:cornerRadius="0dp">
+96 
+97         </Button>
+98 
+99         <Button
+100             android:id="@+id/sevenButton"
+101             android:layout_width="wrap_content"
+102             android:layout_height="wrap_content"
+103             android:layout_rowWeight="1"
+104             android:layout_columnWeight="1"
+105             android:layout_margin="0.5dp"
+106             android:backgroundTint="@color/grey"
+107             android:insetTop="0dp"
+108             android:insetBottom="0dp"
+109             android:text="7"
+110             android:textSize="25sp"
+111             app:cornerRadius="0dp">
+112 
+113         </Button>
+114 
+115         <Button
+116             android:id="@+id/eightButton"
+117             android:layout_width="wrap_content"
+118             android:layout_height="wrap_content"
+119             android:layout_rowWeight="1"
+120             android:layout_columnWeight="1"
+121             android:layout_margin="0.5dp"
+122             android:backgroundTint="@color/grey"
+123             android:insetTop="0dp"
+124             android:insetBottom="0dp"
+125             android:text="8"
+126             android:textSize="25sp"
+127             app:cornerRadius="0dp">
+128 
+129         </Button>
+130 
+131         <Button
+132             android:id="@+id/nineButton"
+133             android:layout_width="wrap_content"
+134             android:layout_height="wrap_content"
+135             android:layout_rowWeight="1"
+136             android:layout_columnWeight="1"
+137             android:layout_margin="0.5dp"
+138             android:backgroundTint="@color/grey"
+139             android:insetTop="0dp"
+140             android:insetBottom="0dp"
+141             android:text="9"
+142             android:textSize="25sp"
+143             app:cornerRadius="0dp">
+144 
+145         </Button>
+146 
+147         <Button
+148             android:id="@+id/multiplicationButton"
+149             android:layout_width="wrap_content"
+150             android:layout_height="wrap_content"
+151             android:layout_rowWeight="1"
+152             android:layout_columnWeight="1"
+153             android:layout_margin="0.5dp"
+154             android:backgroundTint="@color/orange"
+155             android:insetTop="0dp"
+156             android:insetBottom="0dp"
+157             android:text="*"
+158             android:textSize="25sp"
+159             app:cornerRadius="0dp">
+160 
+161         </Button>
+162 
+163         <Button
+164             android:id="@+id/fourButton"
+165             android:layout_width="wrap_content"
+166             android:layout_height="wrap_content"
+167             android:layout_rowWeight="1"
+168             android:layout_columnWeight="1"
+169             android:layout_margin="0.5dp"
+170             android:backgroundTint="@color/grey"
+171             android:insetTop="0dp"
+172             android:insetBottom="0dp"
+173             android:text="4"
+174             android:textSize="25sp"
+175             app:cornerRadius="0dp">
+176 
+177         </Button>
+178 
+179         <Button
+180             android:id="@+id/fiveButton"
+181             android:layout_width="wrap_content"
+182             android:layout_height="wrap_content"
+183             android:layout_rowWeight="1"
+184             android:layout_columnWeight="1"
+185             android:layout_margin="0.5dp"
+186             android:backgroundTint="@color/grey"
+187             android:insetTop="0dp"
+188             android:insetBottom="0dp"
+189             android:text="5"
+190             android:textSize="25sp"
+191             app:cornerRadius="0dp">
+192 
+193         </Button>
+194 
+195         <Button
+196             android:id="@+id/sixButton"
+197             android:layout_width="wrap_content"
+198             android:layout_height="wrap_content"
+199             android:layout_rowWeight="1"
+200             android:layout_columnWeight="1"
+201             android:layout_margin="0.5dp"
+202             android:backgroundTint="@color/grey"
+203             android:insetTop="0dp"
+204             android:insetBottom="0dp"
+205             android:text="6"
+206             android:textSize="25sp"
+207             app:cornerRadius="0dp">
+208 
+209         </Button>
+210 
+211         <Button
+212             android:id="@+id/minusButton"
+213             android:layout_width="wrap_content"
+214             android:layout_height="wrap_content"
+215             android:layout_rowWeight="1"
+216             android:layout_columnWeight="1"
+217             android:layout_margin="0.5dp"
+218             android:backgroundTint="@color/orange"
+219             android:insetTop="0dp"
+220             android:insetBottom="0dp"
+221             android:text="-"
+222             android:textSize="25sp"
+223             app:cornerRadius="0dp">
+224 
+225         </Button>
+226 
+227         <Button
+228             android:id="@+id/oneButton"
+229             android:layout_width="wrap_content"
+230             android:layout_height="wrap_content"
+231             android:layout_rowWeight="1"
+232             android:layout_columnWeight="1"
+233             android:layout_margin="0.5dp"
+234             android:backgroundTint="@color/grey"
+235             android:insetTop="0dp"
+236             android:insetBottom="0dp"
+237             android:text="1"
+238             android:textSize="25sp"
+239             app:cornerRadius="0dp">
+240 
+241         </Button>
+242 
+243         <Button
+244             android:id="@+id/twoButton"
+245             android:layout_width="wrap_content"
+246             android:layout_height="wrap_content"
+247             android:layout_rowWeight="1"
+248             android:layout_columnWeight="1"
+249             android:layout_margin="0.5dp"
+250             android:backgroundTint="@color/grey"
+251             android:insetTop="0dp"
+252             android:insetBottom="0dp"
+253             android:text="2"
+254             android:textSize="25sp"
+255             app:cornerRadius="0dp">
+256 
+257         </Button>
+258 
+259         <Button
+260             android:id="@+id/treeButton"
+261             android:layout_width="wrap_content"
+262             android:layout_height="wrap_content"
+263             android:layout_rowWeight="1"
+264             android:layout_columnWeight="1"
+265             android:layout_margin="0.5dp"
+266             android:backgroundTint="@color/grey"
+267             android:insetTop="0dp"
+268             android:insetBottom="0dp"
+269             android:text="3"
+270             android:textSize="25sp"
+271             app:cornerRadius="0dp">
+272 
+273         </Button>
+274 
+275         <Button
+276             android:id="@+id/plusButton"
+277             android:layout_width="wrap_content"
+278             android:layout_height="wrap_content"
+279             android:layout_rowWeight="1"
+280             android:layout_columnWeight="1"
+281             android:layout_margin="0.5dp"
+282             android:backgroundTint="@color/orange"
+283             android:insetTop="0dp"
+284             android:insetBottom="0dp"
+285             android:text="+"
+286             android:textSize="25sp"
+287             app:cornerRadius="0dp">
+288 
+289         </Button>
+290 
+291         <Button
+292             android:id="@+id/zeroButton"
+293             android:layout_width="wrap_content"
+294             android:layout_height="wrap_content"
+295             android:layout_rowWeight="1"
+296             android:layout_columnSpan="2"
+297             android:layout_columnWeight="1"
+298             android:layout_margin="0.5dp"
+299             android:backgroundTint="@color/grey"
+300             android:insetTop="0dp"
+301             android:insetBottom="0dp"
+302             android:text="0"
+303             android:textSize="25sp"
+304             app:cornerRadius="0dp">
+305 
+306         </Button>
+307 
+308         <Button
+309             android:id="@+id/dotButton"
+310             android:layout_width="wrap_content"
+311             android:layout_height="wrap_content"
+312             android:layout_rowWeight="1"
+313             android:layout_columnWeight="1"
+314             android:layout_margin="0.5dp"
+315             android:backgroundTint="@color/grey"
+316             android:insetTop="0dp"
+317             android:insetBottom="0dp"
+318             android:text="."
+319             android:textSize="25sp"
+320             app:cornerRadius="0dp">
+321 
+322         </Button>
+323 
+324         <Button
+325             android:id="@+id/equalsButton"
+326             android:layout_width="wrap_content"
+327             android:layout_height="wrap_content"
+328             android:layout_rowWeight="1"
+329             android:layout_columnWeight="1"
+330             android:layout_margin="0.5dp"
+331             android:backgroundTint="@color/orange"
+332             android:insetTop="0dp"
+333             android:insetBottom="0dp"
+334             android:text="="
+335             android:textSize="25sp"
+336             app:cornerRadius="0dp">
+337 
+338         </Button>
+339 
+340     </GridLayout>
+341 </LinearLayout>  
+ДОДАТОК Б
+
+     MainActivity.java
+     
+1 package nure.hloba.maksym.lab_task3;
+2 
+3 import android.os.Bundle;
+4 import android.util.TypedValue;
+5 import android.widget.Button;
+6 import android.widget.TextView;
+7 
+8 import androidx.appcompat.app.AppCompatActivity;
+9 
+10 import java.util.Arrays;
+11 import java.util.List;
+12 
+13 public class MainActivity extends AppCompatActivity {
+14     private TextView result;
+15     private Calculator calculator = new Calculator();
+16 
+17     @Override
+18     protected void onCreate(Bundle savedInstanceState) {
+19         super.onCreate(savedInstanceState);
+20         setContentView(R.layout.activity_main);
+21     }
+22 
+23     @Override
+24     protected void onStart() {
+25         super.onStart();
+26         result = findViewById(R.id.result);
+27         Button clearButton = 
+findViewById(R.id.clearButton);
+28         Button changeSignButton = 
+findViewById(R.id.changeSignButton);
+29         Button backspaceButton = 
+findViewById(R.id.backspaceButton);
+30         Button divisionButton = 
+findViewById(R.id.divisionButton);
+31         Button sevenButton = 
+findViewById(R.id.sevenButton);
+32         Button eightButton = 
+findViewById(R.id.eightButton);
+33         Button nineButton = findViewById(R.id.nineButton);
+34         Button multiplicationButton = 
+findViewById(R.id.multiplicationButton);
+35         Button fourButton = findViewById(R.id.fourButton);
+36         Button fiveButton = findViewById(R.id.fiveButton);
+37         Button sixButton = findViewById(R.id.sixButton);
+38         Button minusButton = 
+findViewById(R.id.minusButton);
+39         Button oneButton = findViewById(R.id.oneButton);
+40         Button twoButton = findViewById(R.id.twoButton);
+41         Button treeButton = findViewById(R.id.treeButton);
+42         Button plusButton = findViewById(R.id.plusButton);
+43         Button zeroButton = findViewById(R.id.zeroButton);
+44         Button dotButton = findViewById(R.id.dotButton);
+45         Button equalsButton = 
+findViewById(R.id.equalsButton);
+46         List<Button> numbersButtonsList = Arrays.asList(
+47                 zeroButton, oneButton, twoButton,
+48                 treeButton, fourButton, fiveButton,
+49                 sixButton, sevenButton, eightButton,
+50                 nineButton
+51         );
+52         for (Button numberButton : numbersButtonsList) {
+53             numberButton.setOnClickListener(view -> {
+54                 int number = 
+Integer.parseInt(numberButton.getText().toString());
+55                 calculator.addDigitToOperandEnd(number);
+56                 updateResult();
+57             });
+58         }
+59         clearButton.setOnClickListener(view -> {
+60             calculator.reset();
+61             updateResult();
+62         });
+63         backspaceButton.setOnClickListener(view -> {
+64             calculator.removeLastOperandDigit();
+65             updateResult();
+66         });
+67         changeSignButton.setOnClickListener(view -> {
+68             calculator.changeOperandSign();
+69             updateResult();
+70         });
+71         dotButton.setOnClickListener(view -> {
+72             calculator.addDot();
+73             updateResult();
+74         });
+75         divisionButton.setOnClickListener(view -> {
+76             equalsButton.callOnClick();
+77             calculator.setOperation(Operation.DIVIDE);
+78         });
+79         multiplicationButton.setOnClickListener(view -> {
+80             equalsButton.callOnClick();
+81             calculator.setOperation(Operation.MULTIPLY);
+82         });
+83         minusButton.setOnClickListener(view -> {
+84             equalsButton.callOnClick();
+85             calculator.setOperation(Operation.MINUS);
+86         });
+87         plusButton.setOnClickListener(view -> {
+88             equalsButton.callOnClick();
+89             calculator.setOperation(Operation.PLUS);
+90         });
+91         equalsButton.setOnClickListener(view -> {
+92             calculator.calculateResult(new 
+CalculatorResultCallback() {
+93                 @Override
+94                 public void onDivisionByZeroError() {
+95                     setResultText("Not a number");
+96                 }
+97 
+98                 @Override
+99                 public void onSuccess() {
+100                     updateResult();
+101                 }
+102             });
+103         });
+104     }
+105 
+106     private void updateResult() {
+107         setResultText(calculator.getFormatedResult());
+108     }
+109 
+110     private void setResultText(String text) {
+111         result.setText(text);
+112         if (text.length() < 10) {
+113             result.setTextSize(TypedValue.COMPLEX_UNIT_SP, 
+75f);
+114         } else if (text.length() < 12) {
+115             result.setTextSize(TypedValue.COMPLEX_UNIT_SP, 
+60f);
+116         } else if (text.length() < 16) {
+117             result.setTextSize(TypedValue.COMPLEX_UNIT_SP, 
+45f);
+118         } else {
+119             result.setTextSize(TypedValue.COMPLEX_UNIT_SP, 
+35f);
+120         }
+121     }
+122 }  
+ДОДАТОК В
+
+     Calculator.java
+
+1     package nure.hloba.maksym.lab_task3;
+2 
+3     import android.util.Log;
+4 
+5     import java.math.BigDecimal;
+6     import java.math.MathContext;
+7     import java.math.RoundingMode;
+8     import java.text.DecimalFormat;
+9 
+10    public class Calculator {
+11        private BigDecimal operand = BigDecimal.ZERO;
+12        private boolean isDecimalPartActive;
+13        private boolean isTrailingDotVisible;
+14        private int trailingZeroesCount;
+15        private Operation operation;
+16        private static final int MAX_NUMBER_LENGTH = 19;
+17        private boolean isOperandEntered;
+18        private BigDecimal calculatedPart;
+19 
+20        public void addDigitToOperandEnd(int digit) {
+21            if (isOperandEntered) {
+22                isOperandEntered = false;
+23                isDecimalPartActive = false;
+24                isTrailingDotVisible = false;
+25                trailingZeroesCount = 0;
+26                calculatedPart = operand;
+27                operand = BigDecimal.ZERO;
+28            }
+29            if ((operand.toString() + 
+"0".repeat(trailingZeroesCount)).length() == 
+MAX_NUMBER_LENGTH) {
+30                return;
+31            }
+32            if (isTrailingDotVisible) {
+33                isDecimalPartActive = true;
+34            }
+35            isTrailingDotVisible = false;
+36            BigDecimal digitDecimal = 
+BigDecimal.valueOf(digit);
+37            if (isDecimalPartActive) {
+38                if (digitDecimal.compareTo(BigDecimal.ZERO) 
+== 0) {
+39                    trailingZeroesCount++;
+40                }
+41                BigDecimal newDecimalPart = 
+digitDecimal.divide(BigDecimal.TEN.pow(getDecimalPartLength(op
+erand) + 
+1).multiply(BigDecimal.TEN.pow(trailingZeroesCount)));
+42                if (operand.compareTo(BigDecimal.ZERO) == -
+1) {
+43                    newDecimalPart = 
+newDecimalPart.negate();
+44                }
+45                operand = operand.add(newDecimalPart);
+46                if (trailingZeroesCount > 0 && 
+digitDecimal.compareTo(BigDecimal.ZERO) != 0) {
+47                    trailingZeroesCount = 0;
+48                }
+49            } else {
+50                if (operand.compareTo(BigDecimal.ZERO) >= 0) 
+{
+51                    operand = 
+operand.multiply(BigDecimal.TEN).add(digitDecimal);
+52                } else {
+53                    operand = 
+operand.multiply(BigDecimal.TEN).add(digitDecimal.negate());
+54                }
+55            }
+56        }
+57 
+58        public void reset() {
+59            isDecimalPartActive = false;
+60            isTrailingDotVisible = false;
+61            calculatedPart = null;
+62            operation = null;
+63            trailingZeroesCount = 0;
+64            operand = BigDecimal.ZERO;
+65        }
+66 
+67        public void removeLastOperandDigit() {
+68            if (isTrailingDotVisible && trailingZeroesCount 
+== 0) {
+69                isTrailingDotVisible = false;
+70                isDecimalPartActive = false;
+71            } else {
+72                if (isDecimalPartActive) {
+73                    int decimalPartLength = 
+getDecimalPartLength(operand);
+74                    String resultDecimalPart = 
+getFormatedResult().split("\\.")[1];
+75                    Log.d("calculator", 
+removeHeadingZeroes(resultDecimalPart));
+76                    if 
+(removeHeadingZeroes(resultDecimalPart).length() <= 1) {
+77                        isTrailingDotVisible = true;
+78                    }
+79                    if (trailingZeroesCount > 0) {
+80                        trailingZeroesCount--;
+81                    } else {
+82                        updateTrailingZeroesCount();
+83                        operand = 
+operand.subtract(((operand.multiply(BigDecimal.TEN.pow(decimal
+PartLength)).remainder(BigDecimal.TEN)).divide(BigDecimal.TEN.
+pow(decimalPartLength)))).stripTrailingZeros();
+84                    }
+85                } else {
+86                    operand = 
+operand.subtract(operand.remainder(BigDecimal.TEN)).divide(Big
+Decimal.TEN);
+87                }
+88            }
+89        }
+90 
+91        private void updateTrailingZeroesCount() {
+92            String numberPart = 
+getStringDecimalPart(operand);
+93            for (int i = numberPart.length() - 2; i >= 0; i-
+-) {
+94                char digit = numberPart.charAt(i);
+95                if (digit == '0') {
+96                    trailingZeroesCount++;
+97                } else {
+98                    break;
+99                }
+100           }
+101       }
+102 
+103       public void changeOperandSign() {
+104           operand = operand.negate();
+105       }
+106 
+107       public void addDot() {
+108           if (isDecimalPartActive) {
+109               return;
+110           }
+111           isTrailingDotVisible = true;
+112       }
+113 
+114       public void calculateResult(CalculatorResultCallback 
+callback) {
+115           if (operation == null || calculatedPart == null) 
+{
+116               return;
+117           }
+118           boolean isDividingByZero = false;
+119           switch (operation) {
+120               case DIVIDE:
+121                   if (operand.compareTo(BigDecimal.ZERO) 
+== 0) {
+122                       isDividingByZero = true;
+123                       operand = BigDecimal.ZERO;
+124                   } else {
+125                       MathContext mathContext = new 
+MathContext(MAX_NUMBER_LENGTH, RoundingMode.HALF_UP);
+126                       operand = 
+calculatedPart.divide(operand, mathContext);
+127                   }
+128                   break;
+129               case MULTIPLY:
+130                   operand = 
+calculatedPart.multiply(operand);
+131                   break;
+132               case MINUS:
+133                   operand = 
+calculatedPart.subtract(operand);
+134                   break;
+135               case PLUS:
+136                   operand = calculatedPart.add(operand);
+137                   break;
+138           }
+139           operand = operand.stripTrailingZeros();
+140           if (getDecimalPartLength(operand) > 0) {
+141               isDecimalPartActive = true;
+142           }
+143           calculatedPart = null;
+144           operation = null;
+145           if (isDividingByZero) {
+146               callback.onDivisionByZeroError();
+147           } else {
+148               callback.onSuccess();
+149           }
+150       }
+151 
+152       public String getFormatedResult() {
+153           String trailingText = isTrailingDotVisible || 
+(trailingZeroesCount > 0 && getDecimalPartLength(operand) == 
+0) ? "." : "";
+154           for (int i = 0; i < trailingZeroesCount; i++) {
+155               trailingText += "0";
+156           }
+157           DecimalFormat decimalFormat = new 
+DecimalFormat("#.#################");
+158           return decimalFormat.format(operand) + 
+trailingText;
+159       }
+160 
+161       private int getDecimalPartLength(BigDecimal value) {
+162           return getStringDecimalPart(value).length();
+163       }
+164 
+165       private String getStringDecimalPart(BigDecimal 
+value) {
+166           String stringValue = value.toString();
+167           String[] valueParts = stringValue.split("\\.");
+168           if (valueParts.length == 1) {
+169               return "";
+170           }
+171           String decimalPart = valueParts[1];
+172           if (decimalPart.equals("0")) {
+173               return "";
+174           } else {
+175               return decimalPart;
+176           }
+177       }
+178 
+179       private String removeHeadingZeroes(String input) {
+180           int i = 0;
+181           while (i < input.length() && input.charAt(i) == 
+'0') {
+182               i++;
+183           }
+184           return input.substring(i);
+185       }
+186 
+187       public void setOperation(Operation operation) {
+188           isOperandEntered = true;
+189           this.operation = operation;
+190       }
+191   }
+1
+
