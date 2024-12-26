@@ -1,0 +1,20 @@
+<resources>
+    <string name="app_name">Notes</string>
+    <string name="note_deletion_confirmation">Are you sure you want to delete the note?</string>
+    <string name="yes">Yes</string>
+    <string name="no">No</string>
+    <string name="non_written_title_and_description_error">Notes must have a title or description</string>
+    <string name="ok">Ok</string>
+    <string name="non_written_date_and_time_error">Notes must include the date and time of the appointment</string>
+    <string name="date_expired_error">The appointment date has already passed</string>
+    <string name="title">Title</string>
+    <string name="date_and_time">Appointment date and time:</string>
+    <string name="description">Description</string>
+    <string name="edit">Edit</string>
+    <string name="delete">Delete</string>
+    <string name="filter">Filter</string>
+    <string name="great">Great</string>
+    <string name="average">Average</string>
+    <string name="low">Low</string>
+    <string name="clear_filters">Clear Filters</string>
+</resources>

@@ -1,0 +1,40 @@
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+
+    <item
+        android:id="@+id/filter"
+        android:icon="@drawable/filter"
+        android:title="@string/filter"
+        app:showAsAction="always">
+        <menu>
+            <item
+                android:id="@+id/filter_great"
+                android:icon="@drawable/warning_circle_red"
+                android:title="@string/great" />
+            <item
+                android:id="@+id/filter_average"
+                android:icon="@drawable/warning_circle_yellow"
+                android:title="@string/average" />
+            <item
+                android:id="@+id/filter_low"
+                android:icon="@drawable/warning_circle_green"
+                android:title="@string/low" />
+            <item
+                android:id="@+id/filter_clear"
+                android:title="@string/clear_filters" />
+        </menu>
+    </item>
+
+    <item
+        android:id="@+id/add"
+        android:icon="@drawable/plus"
+        android:title=""
+        app:showAsAction="always" />
+
+    <item
+        android:id="@+id/search"
+        android:icon="@drawable/search"
+        android:title=""
+        app:actionViewClass="android.widget.SearchView"
+        app:showAsAction="always" />
+</menu>

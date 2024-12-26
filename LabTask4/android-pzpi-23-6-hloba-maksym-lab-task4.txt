@@ -1,0 +1,345 @@
+﻿МІНІСТЕРСТВО ОСВІТИ І НАУКИ УКРАЇНИ
+ХАРКІВСЬКИЙ НАЦІОНАЛЬНИЙ УНІВЕРСИТЕТ РАДІОЕЛЕКТРОНІКИ
+
+
+КАФЕДРА ПРОГРАМНОЇ ІНЖЕНЕРІЇ
+
+
+
+
+Звіт
+з лабораторної роботи №4 з дисципліни
+Програмування під Android
+   
+
+
+
+
+
+Виконав:                                                     Перевірив:
+ст. гр. ПЗПІ-23-6                                            ст. викладач кафедри ПІ
+Глоба Максим Валерійович                                     Сокорчук Ігор Петрович
+
+
+
+
+
+
+
+
+
+Харків 2024 
+ЗАВДАННЯ
+
+     Розробити застосунок для ведення нотаток.
+     Застосунок повинен дозволяти переглядати список нотаток, створювати 
+нову нотатку, редагувати нотатку та видаляти нотатку. Кожна нотатка повинна 
+мати назву, опис, важливість (три класи), час і дату призначення і картинку 
+(вибирається з галереї).
+     У списку нотатки відображаються з іконкою з галереї і часом створення 
+(праворуч зверху більш дрібним шрифтом), а також графічним відображенням 
+класу важливості (іконка з множини).
+     Потрібно реалізувати функції додавання, видалення, редагування (без 
+збереження між перезапуск додатку) нотаток.
+     Видалення/редагування викликаються з контекстного меню при довгому 
+натисненні, додавання - з основного меню в ActionBar. У ActionBar реалізувати 
+пошук / фільтрація заміток за змістом тексту, а також фільтрацію за 
+важливістю. 
+     Текстові елементи користувацького інтерфейсу повинні бути локалізовані 
+українською та англійською мовами.
+	 
+ХІД РОБОТИ
+
+     Створимо клас, в якому буде міститись інформація про нотатку, а саме 
+клас Note. Після нього створимо клас Importance, що визначає рівні важливості 
+нотаток:
+     
+1    package nure.hloba.maksym.notes;
+2 
+3    public enum Importance {
+4        Great, 
+5        Average, 
+6        Low
+7    }
+
+     MainActivity відповідає за відображення списку нотаток. Створимо меню 
+та додамо обробку натискань на нього:
+
+1    @Override
+2    public boolean onCreateOptionsMenu(Menu menu) {
+3        getMenuInflater().inflate(R.menu.main_activity_menu, 
+menu);
+4        SearchManager searchManager = (SearchManager) 
+getSystemService(Context.SEARCH_SERVICE);
+5        SearchView searchView = (SearchView) 
+menu.findItem(R.id.search).getActionView();
+6        if (searchView != null) {
+7            
+searchView.setSearchableInfo(searchManager.getSearchableInfo(g
+etComponentName()));
+8        }
+9        searchView.setOnSearchClickListener(view -> 
+menu.findItem(R.id.add).setVisible(false));
+10       searchView.setOnCloseListener(() -> {
+11           menu.findItem(R.id.add).setVisible(true);
+12           update();
+13           return false;
+14       });
+15       searchView.setMaxWidth(Integer.MAX_VALUE);
+16       searchView.setOnQueryTextListener(new 
+SearchView.OnQueryTextListener() {
+17           @Override
+18           public boolean onQueryTextSubmit(String text) {
+19               return true;
+20           }
+21
+22           @Override
+23           public boolean onQueryTextChange(String text) {
+24               searchQuery = text;
+25               update();
+26               return false;
+27           }
+28       });
+29       return super.onCreateOptionsMenu(menu);
+30   }
+31
+32   @Override
+33   public boolean onOptionsItemSelected(@NonNull MenuItem 
+item) {
+34       if (item.getItemId() == R.id.add) {
+35           startActivity(new Intent(this, 
+NotesActivity.class));
+36       } else if (item.getItemId() == R.id.filter_great) {
+37           toggleFilter(Importance.Great);
+38       } else if (item.getItemId() == R.id.filter_average) {
+39           toggleFilter(Importance.Average);
+40       } else if (item.getItemId() == R.id.filter_low) {
+41           toggleFilter(Importance.Low);
+42       } else if (item.getItemId() == R.id.filter_clear) {
+43           activeFilters.clear();
+44           update();
+45       }
+46       return super.onOptionsItemSelected(item);
+47   }
+
+Також додамо обробку натискання на пункти контекстного меню:
+
+1    @Override
+2    public boolean onContextItemSelected(@NonNull MenuItem 
+item) {
+3        Note note = adapter.getSelectedNote();
+4        if(item.getItemId() == R.id.edit) {
+5            editNote(note.getId());
+6        } else if(item.getItemId() == R.id.delete) {
+7            AlertDialog alertDialog = new 
+AlertDialog.Builder(this)
+8                    
+.setMessage(R.string.note_deletion_confirmation)
+9                    .setPositiveButton(R.string.yes, new 
+DialogInterface.OnClickListener() {
+10                       @Override
+11                       public void onClick(DialogInterface 
+dialogInterface, int i) {
+12                           NotesManager.deleteNote(note);
+13                           update();
+14                       }
+15                   })
+16                   .setNegativeButton(R.string.no, null)
+17                   .create();
+18           alertDialog.show();
+19       }
+20       return true;
+21   }	
+
+     Створимо адаптер для відображення списку нотаток та реалізуємо 
+відображення елементу списку нотаток у класі, що успадковується від 
+ViewHolder.
+
+1    public void link(Note note) {
+2        TextView title = itemView.findViewById(R.id.title);
+3        TextView description = 
+itemView.findViewById(R.id.description);
+4        TextView dateOfCreation = 
+itemView.findViewById(R.id.dateOfCreation);
+5        ImageView noteItemImageView = 
+itemView.findViewById(R.id.noteItemImageView);
+6        ImageView noteImageView = 
+itemView.findViewById(R.id.noteImageView);
+7        title.setText(note.getTitle());
+8        description.setText(note.getDescription());
+9        updateNoteItemImportanceImage(note, 
+noteItemImageView);
+10       if(note.getTitle().toString().isBlank()) {
+11           title.setVisibility(View.GONE);
+12       }
+13       if(note.getDescription().toString().isBlank()) {
+14           description.setVisibility(View.GONE);
+15       }
+16       if (note.getImageUri() != null) {
+17           
+noteImageView.setImageURI(Uri.parse(note.getImageUri()));
+18       } else {
+19           noteImageView.setImageResource(R.drawable.image);
+20       }
+21       dateOfCreation.setText(new 
+SimpleDateFormat("dd.MM.yyyy 
+HH:mm").format(note.getDateOfCreation()));
+22   }
+     
+Активність NotesActivity відповідає за створення та редагування нотаток. 
+Реалізуємо вибір дати та часу призначення:
+
+1    dateAndTime.setOnClickListener(view -> {
+2        Calendar calendar = Calendar.getInstance();
+3        int day = calendar.get(Calendar.DAY_OF_MONTH);
+4        int month = calendar.get(Calendar.MONTH);
+5        int year = calendar.get(Calendar.YEAR);
+6        int minute = calendar.get(Calendar.MINUTE);
+7        int hour = calendar.get(Calendar.HOUR_OF_DAY);
+8        TimePickerDialog timePickerDialog = new 
+TimePickerDialog(NotesActivity.this, (timePicker, hour1, minute1) -
+> 
+9            dateAndTime.setText(dateAndTime.getText() + " " + 
+addZeroesToDateOrTime(hour1) + ":" + 
+addZeroesToDateOrTime(minute1)), hour, minute, true);
+10       DatePickerDialog datePickerDialog = new 
+DatePickerDialog(NotesActivity.this, (datePicker, year1, month1, 
+day1) -> {
+11           isDateOfAppointmentChanged = true;
+12           dateAndTime.setText(addZeroesToDateOrTime(day1) + "." 
++ addZeroesToDateOrTime(month1 + 1) + "." + year1);
+13           timePickerDialog.show();
+14       }, year, month, day);
+15       
+datePickerDialog.getDatePicker().setMinDate(System.currentTimeMilli
+s());
+16       datePickerDialog.show();
+17   });
+
+     Також реалізуємо вибір важливості нотатки:
+
+1    importanceImageView.setOnClickListener(view -> {
+2        if(noteImportance.equals(Importance.Great)) {
+3            noteImportance = Importance.Low;
+4        } else if (noteImportance.equals(Importance.Low)) {
+5            noteImportance = Importance.Average;
+6        } else {
+7            noteImportance = Importance.Great;
+8        }
+9        updateImportanceImage();
+10   });
+     
+     Реалізуємо додавання зображення до нотатки:
+
+      1    private void openGallery() {
+      2        Intent intent = new Intent(Intent.ACTION_PICK, 
+android.provider.MediaStore.Images.Media.EXTERNAL_CONTENT_URI);
+      3        intent.setType("image/*");
+      4        startActivityForResult(intent, PICK_IMAGE_REQUEST);
+      5    }
+      6    
+      7    @Override
+      8    protected void onActivityResult(int requestCode, int 
+resultCode, Intent data) {
+      9        super.onActivityResult(requestCode, resultCode, 
+data);
+      10       if (requestCode == PICK_IMAGE_REQUEST && resultCode 
+== RESULT_OK && data != null) {
+      11           Uri uri = data.getData();
+      12           try {
+      13               Uri copiedImageUri = 
+copyImageToInternalStorage(uri);
+      14               imageUri = 
+copyImageToInternalStorage(uri).toString();
+      15               if (copiedImageUri != null) {
+      16                   
+noteImageView.setImageURI(copiedImageUri);
+      17               }
+      18           } catch (Exception e) {
+      19               e.printStackTrace();
+      20           }
+      21       }
+      22   }
+     
+     Клас NotesManager реалізує CRUD-операції. Додавання нотатки:
+     
+      1    public static void addNote(Note note) {
+      2        notes.add(note);
+      3    }
+     
+     Отримання нотатки за id:
+
+1    public static Note getNote(int id) {
+2        for(int i = 0; i < notes.size(); i++) {
+3            if(notes.get(i).getId() == id) {
+4                return notes.get(i);
+5            }
+6        }
+7        return null;
+8    }	
+	
+     Редагування нотатки:
+
+1    public static void editNote(Note note) {
+2        Note oldNote = getNote(note.getId());
+3        int oldNodeIndex = notes.indexOf(oldNote);
+4        
+oldNote.setDateOfAppointment(note.getDateOfAppointment());
+5        oldNote.setTitle(note.getTitle());
+6        oldNote.setDescription(note.getDescription());
+7        oldNote.setImportance(note.getImportance());
+8        oldNote.setImageUri(note.getImageUri());
+9        notes.set(oldNodeIndex, oldNote);
+10   }
+     
+     Видалення нотатки:
+     
+1    public static void deleteNote(Note note) {
+2        notes.remove(note);
+3    }
+     
+     Фільтрація (Пошук) нотатки:
+      1    public static List<Note> filterNotes(List<Importance> 
+importanceLevels, String searchText) {
+      2        List<Note> result = new ArrayList<>();
+      3        for (Note note : notes) {
+      4            boolean matchesImportance = 
+importanceLevels.isEmpty() || 
+importanceLevels.contains(note.getImportance());
+      5            boolean matchesSearch = searchText.isEmpty() ||
+      6                    
+note.getTitle().toLowerCase().contains(searchText.toLowerCase()) 
+||
+      7                    
+note.getDescription().toLowerCase().contains(searchText.toLowerCas
+e());
+      8            if (matchesImportance && matchesSearch) {
+      9                result.add(note);
+      10           }
+      11       }
+      12       return result;
+      13   }
+     
+     Застосунок локалізований українською та англійською мовами файлами 
+strings.xml. Посилання на увесь код програми можна переглянути у Додатку A.
+ 
+ВИСНОВКИ
+
+   Під час виконання лабораторної роботи було створено застосунок для 
+керування нотатками, що підтримує додавання, редагування, видалення, пошук 
+і фільтрацію. Також реалізовано локалізацію.
+   Відеозвіт на YouTube. URL: https://www.youtube.com/watch?v=1WWIilg2P5k
+
+ 
+ВИКОРИСТАНІ ДЖЕРЕЛА
+
+1.	Localize your app | Android Developers. URL:  
+https://developer.android.com/guide/topics/resources/localization (дата 
+звернення: 23.12.2024).
+  
+ДОДАТОК А
+     
+     Повний код застосунку на GitHub:
+     https://github.com/NureHlobaMaksym/android-pzpi-23-6-hloba-maksym
+1
+

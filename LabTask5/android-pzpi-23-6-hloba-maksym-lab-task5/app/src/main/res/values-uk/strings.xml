@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Замітки</string>
+    <string name="note_deletion_confirmation">Ви точно хочете видалити нотатку?</string>
+    <string name="yes">Так</string>
+    <string name="no">Ні</string>
+    <string name="non_written_title_and_description_error">У заміток обов\'язково має бути заголовок або опис</string>
+    <string name="ok">Ок</string>
+    <string name="non_written_date_and_time_error">У заміток обов\'язково має бути дата та час призначення</string>
+    <string name="date_expired_error">Дата призначення вже минула</string>
+    <string name="title">Заголовок</string>
+    <string name="date_and_time">Дата та час призначення:</string>
+    <string name="description">Опис</string>
+    <string name="edit">Редагувати</string>
+    <string name="delete">Видалити</string>
+    <string name="filter">Фільтр</string>
+    <string name="great">Високий</string>
+    <string name="average">Середній</string>
+    <string name="low">Низький</string>
+    <string name="clear_filters">Очистити фільтри</string>
+    <string name="theme">Вибір теми</string>
+    <string name="dark_theme">Темна тема</string>
+    <string name="font_size">Розмір шрифту</string>
+    <string-array name="font_sizes_labels">
+        <item>Малий</item>
+        <item>Середній</item>
+        <item>Великий</item>
+    </string-array>
+</resources>
